@@ -5,33 +5,32 @@ import express from "express";
 import dotenv from "dotenv";
 
 import authRoutes from "./routes/auth.routes.js";
+import connectToMongoDB from "./db/connectToMongoDB.js";
 //create a express server
 const app = express();
+const PORT=process.env.PORT || 5000;
 
 dotenv.config();
 
-const PORT=process.env.PORT || 5000;
+app.use(express.json()) //extract the feilds from req body,to parse the incoming
+                        //requests with json playlets(from req.body)
 
+//we can use a middleware insteadd above 3
+app.use("/api/auth",authRoutes)
 
 //when we go to the root route
 app.get("/",(req,res) => {
   //root route http://localhost:5000/
-  res.send("Hello world, server is ready");
+  res.send("Hello world, server is ready to");
 });
 
-// app.get("/api/auth/signup",(req,res)=>{
-//     console.log("signup route");
-// });
+app.listen(PORT,() => {
+    connectToMongoDB();
+    console.log(`Server running on port ${PORT}` // server is running on this port
+)});
 
-// app.get("/api/auth/login",(req,res)=>{
-//     console.log("login route");
-// });
 
-// app.get("/api/auth/logout",(req,res)=>{
-//     console.log("logout route");
-// });
-
-//we can use a middleware insteadd above 3
-app.use("/api/auth/",authRoutes)
-
-app.listen(PORT,() => console.log(`Server running on port ${PORT}`)); // server is running on this port
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Internal server error' });
+});
